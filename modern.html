@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#007bff">
+<title>Заказ-наряд</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="error-log"></div>
+<div class="toast" id="toast"></div>
+
+<div class="mobile-tabs">
+  <button id="tabSearch" class="active">🔍 Поиск</button>
+  <button id="tabForm">📋 Бланк</button>
+</div>
+
+<div class="container">
+
+  <!-- ======================= ПОИСК ======================= -->
+  <section class="panel active" id="panelSearch">
+    <h2>1. Поиск</h2>
+
+    <div class="search-mode">
+      <button class="mode-btn active" data-mode="materials">🔧 Материалы</button>
+      <button class="mode-btn" data-mode="recipes">🎨 Готовые краски</button>
+    </div>
+
+    <input type="text" id="search" placeholder="Код, название материала…" autocomplete="off" autocorrect="off" spellcheck="false">
+
+    <label class="clear-toggle">
+      <input type="checkbox" id="clearSearchToggle" checked>
+      Очищать поиск при добавлении
+    </label>
+
+    <details class="manual-add" id="manualBlock">
+      <summary>✏️ Добавить вручную</summary>
+      <div class="manual-inputs">
+        <input type="text" id="manualCode" placeholder="Код" style="width:35%">
+        <input type="text" id="manualName" placeholder="Наименование" style="width:65%">
+      </div>
+      <div class="manual-btns">
+        <button class="btn-left" id="btnManualPaint">◀ В Эмаль</button>
+        <button class="btn-right" id="btnManualMaterials">В Материалы ▶</button>
+      </div>
+    </details>
+
+    <!-- Управление готовыми красками: только в режиме «Готовые краски» -->
+    <div id="recipesBar" style="display:none">
+      <div class="modal-toolbar">
+        <button class="btn-primary" id="btnNewRecipe">＋ Новая краска</button>
+        <button class="btn-ghost" id="btnExport">⬇ Копия</button>
+        <button class="btn-ghost" id="btnImport">⬆ Загрузить</button>
+        <input type="file" id="fileImport" accept=".json,application/json" hidden>
+      </div>
+      <div id="backupNotice"></div>
+    </div>
+
+    <div class="chips" id="categoryChips"></div>
+
+    <div id="frequentWrap"></div>
+    <div id="resultsWrap"></div>
+  </section>
+
+  <!-- ======================= БЛАНК ======================= -->
+  <section class="panel" id="panelForm">
+    <div id="header-inputs">
+      <h2>2. Данные</h2>
+      <input type="text" id="orderNum" placeholder="№ Заказ-наряда" style="margin-bottom:5px">
+      <input type="text" id="carModel" placeholder="Автомобиль" style="margin-bottom:5px">
+      <input type="text" id="vin" placeholder="VIN / Номер" style="margin-bottom:5px">
+      <input type="text" id="master" placeholder="Маляр" style="margin-bottom:5px">
+    </div>
+
+    <div class="print-header" id="document-header">
+      <h1>Малярный цех</h1>
+      <p id="print-order"></p>
+      <p id="print-car"></p>
+      <p id="print-master"></p>
+      <p id="print-date" style="color:#555;font-size:12px;margin-top:10px"></p>
+    </div>
+
+    <div id="print-area">
+      <div class="print-layout">
+        <div class="print-col">
+          <h3>Автоэмаль</h3>
+          <table id="table-paint">
+            <thead>
+              <tr>
+                <th>Код</th><th>Наименование</th><th>Кол-во</th><th class="action-col">✕</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="print-col">
+          <h3>Материалы</h3>
+          <table id="table-materials">
+            <thead>
+              <tr>
+                <th>Код</th><th>Наименование</th><th>Кол-во</th><th class="action-col">✕</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-pdf" id="btnPdf">📄 PDF</button>
+      <button class="btn-clear" id="btnClear">🗑️ Очистить</button>
+    </div>
+    <div class="hint">В окне печати выберите <b>«Сохранить как PDF»</b></div>
+  </section>
+
+</div>
+
+<!-- ======================= РЕДАКТОР ГОТОВОЙ КРАСКИ ======================= -->
+<div class="modal" id="recipesModal">
+  <div class="modal-box">
+
+    <div class="modal-head">
+      <h2 id="editorTitle">Готовая краска</h2>
+      <button class="modal-close" id="btnCloseEditor">×</button>
+    </div>
+
+    <div id="editorView">
+      <div class="field-row">
+        <div class="field">
+          <label for="recName">Название готового цвета</label>
+          <input type="text" id="recName" placeholder="Например: Lada 221" autocomplete="off">
+        </div>
+        <div class="field field-base">
+          <label for="recBase">База состава</label>
+          <input type="number" id="recBase" value="100" min="0.01" step="0.01">
+        </div>
+        <div class="field field-base" style="width:80px">
+          <label for="recUnit">Ед.</label>
+          <select id="recUnit">
+            <option value="г">г</option>
+            <option value="мл">мл</option>
+            <option value="кг">кг</option>
+            <option value="л">л</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">Миксы на эту базу</div>
+      <div id="mixRows"></div>
+
+      <div class="picker">
+        <input type="text" id="mixPicker" placeholder="Добавить микс: код или название…" autocomplete="off">
+        <div class="picker-list" id="mixPickerList"></div>
+      </div>
+
+      <div class="mix-sum" id="mixSum"></div>
+
+      <div class="editor-actions">
+        <button class="btn-ghost btn-danger" id="btnDeleteRecipe" style="display:none">🗑 Удалить</button>
+        <button class="btn-ghost" id="btnCancelEdit">Отмена</button>
+        <button class="btn-primary" id="btnSaveRecipe">Сохранить</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="database.js"></script>
+<script src="categories.js"></script>
+<script src="recipes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
