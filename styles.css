@@ -218,6 +218,7 @@ details.manual-add[open] summary { margin-bottom: 10px; }
   padding-bottom: 8px;
   margin-bottom: 4px;
   scrollbar-width: none;
+  flex: 0 0 auto; /* не сжимаем ряд категорий */
 }
 
 .chips::-webkit-scrollbar { display: none; }

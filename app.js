@@ -290,8 +290,17 @@
 
   function filteredItems(query) {
     const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const alternativeCodes = codeAlternatives(query);
+
     return database.filter((item) => {
       if (activeCategory !== 'all' && categoryOf(item.code) !== activeCategory) return false;
+
+      // Введён код краски: находим и по второму коду другой системы (Brulex ↔ Standox)
+      if (alternativeCodes) {
+        const paintCode = paintCodeOf(item.name);
+        if (paintCode && alternativeCodes.has(paintCode)) return true;
+      }
+
       const text = (item.code + ' ' + item.name).toLowerCase();
       return words.every((w) => text.includes(w));
     });
@@ -309,7 +318,10 @@
 
     const code = document.createElement('div');
     code.className = 'code';
-    code.textContent = item.code;
+
+    // Второй код той же краски в другой системе
+    const alias = paintAliasOf(item.name);
+    code.textContent = alias ? item.code + ' · ' + alias : item.code;
 
     text.append(name, code);
 
