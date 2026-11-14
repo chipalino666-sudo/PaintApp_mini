@@ -433,9 +433,17 @@
     }
 
     // Ищем и по названию цвета, и по миксам — так видно, куда входит нужный пигмент
+    const alternativeCodes = codeAlternatives(query.trim());
+
     const matched = recipes.filter((recipe) => {
       if (!q) return true;
       if (recipe.name.toLowerCase().includes(q)) return true;
+
+      if (alternativeCodes && recipe.mixes.some((mix) => {
+        const paintCode = paintCodeOf(mix.name);
+        return paintCode && alternativeCodes.has(paintCode);
+      })) return true;
+
       return recipe.mixes.some((mix) => (mix.code + ' ' + mix.name).toLowerCase().includes(q));
     });
 
@@ -839,8 +847,16 @@
     }
 
     const words = query.split(/\s+/);
+    const alternativeCodes = codeAlternatives(query);
+
     const found = database
       .filter((item) => {
+        // Код краски: находим и по второму коду другой системы (Brulex ↔ Standox)
+        if (alternativeCodes) {
+          const paintCode = paintCodeOf(item.name);
+          if (paintCode && alternativeCodes.has(paintCode)) return true;
+        }
+
         const text = (item.code + ' ' + item.name).toLowerCase();
         return words.every((w) => text.includes(w));
       })
@@ -856,7 +872,8 @@
       const code = document.createElement('span');
       code.className = 'pk-code';
       code.textContent = item.code;
-      row.append(code, document.createTextNode('  ' + item.name));
+      const alias = paintAliasOf(item.name);
+      row.append(code, document.createTextNode('  ' + item.name + (alias ? ' · ' + alias : '')));
       row.addEventListener('click', () => addDraftMix(item));
       list.appendChild(row);
     });
