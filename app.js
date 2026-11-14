@@ -146,6 +146,7 @@
     if (fullName && fullName !== shortName) tdName.title = fullName;
 
     const tdQty = document.createElement('td');
+    tdQty.className = 'cell-qty';
     const input = document.createElement('input');
     input.type = 'number';
     input.step = '0.01';
@@ -153,6 +154,15 @@
     input.value = fmt(amount);
     input.addEventListener('input', saveForm);
     tdQty.appendChild(input);
+
+    // Автоэмаль и готовые краски считаем в граммах — подписываем единицу
+    const table = tbody.closest('table');
+    if (table && table.id === 'table-paint') {
+      const unit = document.createElement('span');
+      unit.className = 'unit';
+      unit.textContent = 'г';
+      tdQty.appendChild(unit);
+    }
 
     const tdDel = document.createElement('td');
     tdDel.className = 'action-col';
