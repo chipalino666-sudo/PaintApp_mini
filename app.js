@@ -1043,6 +1043,33 @@
      7. Печать / PDF
      ---------------------------------------------------------------------- */
 
+  /** Короткое имя мастера: «Иванов Пётр Сергеевич» → «Иванов П.» */
+  function shortMasterName(full) {
+    const parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    if (parts.length === 1) return parts[0];
+    return parts[0] + ' ' + parts[1].charAt(0).toUpperCase() + '.';
+  }
+
+  /** Убираем из имени файла символы, недопустимые в Windows и macOS. */
+  function fileSafe(text) {
+    return String(text || '')
+      .replace(/[\\/:*?"<>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /** Имя PDF: «Иванов П._Lada Vesta_K555KK77» */
+  function pdfFileName() {
+    const parts = [
+      shortMasterName($('#master').value),
+      $('#carModel').value,
+      $('#vin').value
+    ].map(fileSafe).filter(Boolean);
+
+    return (parts.join('_') || 'Заказ-наряд').slice(0, 90);
+  }
+
   function preparePrint() {
     const order = $('#orderNum').value.trim();
     const car = $('#carModel').value.trim();
@@ -1065,6 +1092,14 @@
 
     $('#print-master').innerHTML = `<strong>Маляр:</strong> ${escapeHtml(master)}`;
     $('#print-date').textContent = 'Дата: ' + new Date().toLocaleDateString('ru-RU');
+
+    // Имя файла для «Сохранить как PDF»: мастер, автомобиль и номер
+    const previousTitle = document.title;
+    document.title = pdfFileName();
+
+    window.addEventListener('afterprint', () => {
+      document.title = previousTitle;
+    }, { once: true });
 
     window.print();
   }
