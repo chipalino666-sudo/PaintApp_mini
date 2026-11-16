@@ -333,6 +333,7 @@ const database = [
 { code: "SE313762", name: "Растворитель A1 890 SPOT BLANDER для переходов 400ml", stock: 1.3 },
 { code: "SE289197", name: "Растворитель Brulex для переходов 1л", stock: 1.17 },
 { code: "SE333585", name: "Респиратор 3M", stock: 8 },
+{ code: "SE313518", name: "Салфетка липкая A1 Super wave", stock: 100 },
 { code: "SE202269", name: "Сверло для точечной сварки", stock: 1 },
 { code: "SE335659", name: "Ситечки RoxelPro для краски,190", stock: 56 },
 { code: "SE335834", name: "Смесительный бачок и запорное кольцо APPS A1 400 (внешняя чашка + воротник) (в кор. по 50шт)", stock: 4 },

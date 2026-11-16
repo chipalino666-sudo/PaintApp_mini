@@ -330,6 +330,7 @@ const ITEM_CATEGORY = {
   "SE313762": "thinner",
   "SE289197": "thinner",
   "SE333585": "consumable",
+  "SE313518": "consumable",
   "SE202269": "consumable",
   "SE335659": "consumable",
   "SE335834": "consumable",
