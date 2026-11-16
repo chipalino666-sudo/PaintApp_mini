@@ -402,6 +402,10 @@
     fav.textContent = '★ Избранное';
     fav.addEventListener('click', () => {
       activeCategory = 'favorites';
+
+      // Иначе в избранном останутся только совпадения по прошлому запросу
+      $('#search').value = '';
+
       renderChips();
       renderSearchView();
     });
@@ -627,7 +631,9 @@
   }
 
   function appendItemList(container, items, emptyText) {
-    const limited = items.slice(0, MAX_RESULTS);
+    // В избранном показываем всё, что человек отметил, без ограничения
+    const limit = activeCategory === 'favorites' ? 500 : MAX_RESULTS;
+    const limited = items.slice(0, limit);
 
     if (limited.length) {
       const list = document.createElement('ul');
