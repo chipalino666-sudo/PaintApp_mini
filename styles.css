@@ -865,17 +865,23 @@ th { background: #f8f9fa; font-size: 14px; }
 .star:hover { background: #fdf5da !important; }
 .star.active { color: #e0a800; }
 
-/* Кнопка сброса остатков */
+/* Мелкая ссылка внизу бланка */
+.form-footer {
+  margin-top: 10px;
+  text-align: right;
+}
+
 .link-btn {
+  display: inline-block;
+  width: auto;
   background: transparent !important;
-  color: #54697c;
+  color: #98a4b0;
   border: none;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-decoration: underline;
-  padding: 4px 0 !important;
-  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 2px 0 !important;
   cursor: pointer;
 }
 
-.link-btn:hover { color: #007bff; }
+.link-btn:hover { color: #6b7a89; text-decoration: underline; }
