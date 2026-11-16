@@ -107,6 +107,62 @@
   const isMobile = () => window.innerWidth <= 768;
 
   /* ----------------------------------------------------------------------
+     Остатки
+     Остаток = что было на складе минус то, что уже стоит в бланке.
+     ---------------------------------------------------------------------- */
+
+  function stockInfo(code) {
+    const item = database.find((i) => i.code === code);
+    if (!item || typeof item.stock !== 'number') return null;
+
+    return { base: item.stock, unit: item.unit || '' };
+  }
+
+  function usedInForm(code) {
+    let sum = 0;
+
+    document.querySelectorAll('#table-paint tbody tr, #table-materials tbody tr').forEach((row) => {
+      if (row.dataset.code !== code) return;
+
+      const input = row.querySelector('input');
+      sum += parseFloat(input && input.value ? input.value : 0) || 0;
+    });
+
+    return round2(sum);
+  }
+
+  function formatStock(value, unit) {
+    const text = Math.abs(value) >= 1000
+      ? value.toLocaleString('ru-RU', { maximumFractionDigits: 2 })
+      : fmt(value);
+
+    return unit ? text + ' ' + unit : text;
+  }
+
+  function stockLabel(code) {
+    const info = stockInfo(code);
+    if (!info) return { text: '', left: null };
+
+    const used = usedInForm(code);
+    const left = round2(info.base - used);
+
+    const text = used > 0
+      ? `остаток ${formatStock(left, info.unit)} · списано ${formatStock(used, info.unit)}`
+      : `остаток ${formatStock(info.base, info.unit)}`;
+
+    return { text, left };
+  }
+
+  function refreshStockLabels() {
+    document.querySelectorAll('#resultsWrap [data-stock-for]').forEach((el) => {
+      const label = stockLabel(el.dataset.stockFor);
+
+      el.textContent = label.text;
+      el.classList.toggle('stock-empty', label.left !== null && label.left <= 0);
+    });
+  }
+
+  /* ----------------------------------------------------------------------
      3. Бланк
      ---------------------------------------------------------------------- */
 
@@ -130,6 +186,7 @@
 
     rememberUsage(code, name, table);
     saveForm();
+    refreshStockLabels();
   }
 
   function appendRow(tbody, code, shortName, fullName, amount) {
@@ -152,7 +209,10 @@
     input.step = '0.01';
     input.min = '0';
     input.value = fmt(amount);
-    input.addEventListener('input', saveForm);
+    input.addEventListener('input', () => {
+      saveForm();
+      refreshStockLabels();
+    });
     tdQty.appendChild(input);
 
     // Автоэмаль и готовые краски считаем в граммах — подписываем единицу
@@ -333,7 +393,12 @@
     const alias = paintAliasOf(item.name);
     code.textContent = alias ? item.code + ' · ' + alias : item.code;
 
-    text.append(name, code);
+    const stock = document.createElement('div');
+    stock.className = 'stock';
+    stock.dataset.stockFor = item.code;
+    stock.textContent = stockLabel(item.code).text;
+
+    text.append(name, code, stock);
 
     const group = document.createElement('div');
     group.className = 'btn-group';
