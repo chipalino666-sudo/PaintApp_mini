@@ -834,9 +834,18 @@ th { background: #f8f9fa; font-size: 14px; }
 }
 /* Остаток в списке материалов */
 .stock {
-  margin-top: 2px;
-  font-size: 11.5px;
-  color: #6b7a89;
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eaf3ea;
+  color: #1f6b35;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.stock-empty { color: #c0392b; font-weight: 600; }
+.stock-empty {
+  background: #fdecea;
+  color: #b3261e;
+}
