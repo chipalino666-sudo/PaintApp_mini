@@ -233,7 +233,38 @@
     refreshStockLabels();
   }
 
-  function appendRow(tbody, code, shortName, fullName, amount) {
+  /* ---- Нормы на деталь: сколько грамм уходит на одну деталь --------------- */
+
+const NORMS_KEY = 'paintShopNorms';
+
+function loadNorms() {
+  try {
+    const raw = localStorage.getItem(NORMS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveNorms(norms) {
+  try { localStorage.setItem(NORMS_KEY, JSON.stringify(norms)); } catch (error) { /* приватный режим */ }
+}
+
+function partsCount() {
+  const input = document.getElementById('partsInput');
+  const value = input ? parseFloat(input.value) : 1;
+  return value > 0 ? value : 1;
+}
+
+/** Количество для списания: норма × детали, либо 1 по умолчанию. */
+function amountFor(code) {
+  const norm = loadNorms()[code];
+  if (!norm) return 1;
+
+  return Math.round(norm * partsCount() * 100) / 100;
+}
+
+function appendRow(tbody, code, shortName, fullName, amount) {
     const tr = document.createElement('tr');
     tr.dataset.code = code;
 
@@ -487,7 +518,7 @@
     toPaint.className = 'btn-left';
     toPaint.textContent = '◀ Эмаль';
     toPaint.addEventListener('click', () => {
-      addToReport(item.code, item.name, 'paint', 1);
+      addToReport(item.code, item.name, 'paint', amountFor(item.code));
       afterAdd();
     });
 
@@ -495,7 +526,7 @@
     toMaterials.className = 'btn-right';
     toMaterials.textContent = 'Материал ▶';
     toMaterials.addEventListener('click', () => {
-      addToReport(item.code, item.name, 'materials', 1);
+      addToReport(item.code, item.name, 'materials', amountFor(item.code));
       afterAdd();
     });
 
@@ -508,7 +539,32 @@
       toggleFavorite(item.code);
     });
 
-    group.append(star, toPaint, toMaterials);
+    // Норма на деталь: сколько грамм этого материала уходит на одну деталь
+    const norm = document.createElement('button');
+    norm.className = 'norm-btn' + (loadNorms()[item.code] ? ' active' : '');
+    norm.textContent = '⚙';
+    norm.title = loadNorms()[item.code]
+      ? `Норма: ${loadNorms()[item.code]} на деталь (нажмите, чтобы изменить)`
+      : 'Задать норму на деталь';
+
+    norm.addEventListener('click', (event) => {
+      event.stopPropagation();
+
+      const norms = loadNorms();
+      const current = norms[item.code] || '';
+      const answer = prompt(`Сколько грамм «${item.name}» уходит на одну деталь?`, current);
+
+      if (answer === null) return;
+
+      const value = parseFloat(String(answer).replace(',', '.'));
+      if (!value || value <= 0) delete norms[item.code];
+      else norms[item.code] = value;
+
+      saveNorms(norms);
+      renderResults($('#search').value.trim());
+    });
+
+    group.append(norm, star, toPaint, toMaterials);
     li.append(text, group);
     return li;
   }
